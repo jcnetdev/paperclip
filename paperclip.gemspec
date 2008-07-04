@@ -10,9 +10,9 @@ Gem::Specification.new do |s|
   s.email = 'info@thoughtbot.com'
   s.homepage = 'http://github.com/thoughtbot/paperclip'
   
-  s.has_rdoc = false
-  # s.rdoc_options = ["--main", "README"]
-  #s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
+  s.has_rdoc = true
+  s.rdoc_options = ["--main", "README"]
+  s.extra_rdoc_files = ["README"]
 
   s.add_dependency 'rails', ['>= 2.1']
   
