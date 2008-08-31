@@ -190,7 +190,7 @@ class IntegrationTest < Test::Unit::TestCase
       assert ! @d2.valid?
     end
 
-    should "be able to reload without saving an not have the file disappear" do
+    should "be able to reload without saving and not have the file disappear" do
       @dummy.avatar = @file
       assert @dummy.save
       @dummy.avatar = nil
@@ -198,6 +198,36 @@ class IntegrationTest < Test::Unit::TestCase
       @dummy.reload
       assert_equal "5k.png", @dummy.avatar_file_name
     end
+    
+    context "that is assigned its file from another Paperclip attachment" do
+      setup do
+        @dummy2 = Dummy.new
+        @file2  = File.new(File.join(FIXTURES_DIR, "12k.png"))
+        assert  @dummy2.avatar = @file2
+        @dummy2.save
+      end
+      
+      should "work when assigned a file" do
+        assert_not_equal `identify -format "%wx%h" #{@dummy.avatar.to_file(:original).path}`,
+                         `identify -format "%wx%h" #{@dummy2.avatar.to_file(:original).path}`
+
+        assert @dummy.avatar = @dummy2.avatar
+        @dummy.save
+        assert_equal `identify -format "%wx%h" #{@dummy.avatar.to_file(:original).path}`,
+                     `identify -format "%wx%h" #{@dummy2.avatar.to_file(:original).path}`
+      end
+      
+      should "work when assigned a nil file" do
+        @dummy2.avatar = nil
+        @dummy2.save
+
+        @dummy.avatar = @dummy2.avatar
+        @dummy.save
+        
+        assert !@dummy.avatar?
+      end
+    end    
+
   end
 
   if ENV['S3_TEST_BUCKET']
@@ -317,7 +347,7 @@ class IntegrationTest < Test::Unit::TestCase
         assert ! @d2.valid?
       end
 
-      should "be able to reload without saving an not have the file disappear" do
+      should "be able to reload without saving and not have the file disappear" do
         @dummy.avatar = @file
         assert @dummy.save
         @dummy.avatar = nil

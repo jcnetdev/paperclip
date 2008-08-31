@@ -71,7 +71,7 @@ class StorageTest < Test::Unit::TestCase
       should "not get a bucket to get a URL" do
         @dummy.avatar.expects(:s3).never
         @dummy.avatar.expects(:s3_bucket).never
-        assert_equal "https://s3.amazonaws.com/testing/avatars/original/5k.png", @dummy.avatar.url
+        assert_match %r{^http://s3\.amazonaws\.com/testing/avatars/original/5k\.png}, @dummy.avatar.url
       end
 
       context "and saved" do
@@ -85,6 +85,23 @@ class StorageTest < Test::Unit::TestCase
           @key_mock.expects(:data=)
           @key_mock.expects(:put)
           @dummy.save
+        end
+
+        should "succeed" do
+          assert true
+        end
+      end
+      
+      context "and remove" do
+        setup do
+          @s3_mock     = stub
+          @bucket_mock = stub
+          RightAws::S3.expects(:new).with("12345", "54321", {}).returns(@s3_mock)
+          @s3_mock.expects(:bucket).with("testing", true, "public-read").returns(@bucket_mock)
+          @key_mock = stub
+          @bucket_mock.expects(:key).at_least(2).returns(@key_mock)
+          @key_mock.expects(:delete)
+          @dummy.destroy_attached_files
         end
 
         should "succeed" do
